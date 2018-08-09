@@ -23,7 +23,6 @@ export default class App extends React.Component {
     };
     this.model = null;
     this.addCube = this.addCube.bind(this);
-    this.handleDrop = this.handleDrop.bind(this);
   }
 
   componentWillMount() {
@@ -46,26 +45,28 @@ export default class App extends React.Component {
     });
   }
 
-  handleDrop = () => {
-    console.log('PRessed');
-    const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-    const thingToDrop = new THREE.Mesh(geometry, customMaterial);
-    const newItem = dropItem(thingToDrop, this.camera.position);
-    this.scene.add(newItem);
-  };
+  // handleDrop = () => {
+  //   console.log('PRessed');
+  //   const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+  //   const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  //   const thingToDrop = new THREE.Mesh(geometry, customMaterial);
+  //   const newItem = dropItem(thingToDrop, this.camera.position);
+  //   this.scene.add(newItem);
+  // };
 
   async addCube() {
-    console.log('PRessed');
     const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const sphere = new THREE.SphereGeometry(0.8, 0.07, 0.07);
     const customMaterial = new THREE.MeshBasicMaterial({
       map: await ExpoTHREE.createTextureAsync({
-        asset: Expo.Asset.fromModule(require('./custom.jpg')),
+        asset: Expo.Asset.fromModule(require('./Glass.jpg')),
       }),
       transparent: true,
     });
-    const mesh = new THREE.Mesh(geometry, customMaterial);
-    this.scene.add(mesh);
+    const mesh = new THREE.Mesh(geometry, glassMaterial);
+    const newItem = dropItem(mesh, this.camera.position);
+    this.scene.add(newItem);
   }
 
   render() {
