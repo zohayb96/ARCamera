@@ -128,19 +128,19 @@ export default class App extends React.Component {
         asset: Expo.Asset.fromModule(require('./Glass.jpg')),
       }),
       transparent: true,
-      opacity: 0.5,
+      opacity: 0.75,
     });
 
-    scene.background = ExpoTHREE.createARBackgroundTexture(arSession, renderer);
+    // scene.background = ExpoTHREE.createARBackgroundTexture(arSession, renderer);
     var SphereGeometry = new THREE.SphereGeometry(0.8, 0.07, 0.07);
 
     // Edit the box dimensions here and see changes immediately!
-    // const geometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
-    // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    // const cube = new THREE.Mesh(geometry, glassMaterial);
-    // cube.position.z = -0.8;
-    // this.model = cube;
-    // scene.add(cube);
+    const geometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, customMaterial);
+    cube.position.z = -0.8;
+    this.model = cube;
+    scene.add(cube);
 
     // lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
     // var lineGeometry = new THREE.Geometry();
@@ -150,16 +150,16 @@ export default class App extends React.Component {
     // var line = new THREE.Line(lineGeometry, lineMaterial);
     // scene.add(line);
 
-    const sphereGeometry = new THREE.SphereBufferGeometry(1, 36, 36);
-    const sphere = new THREE.Mesh(sphereGeometry, glassMaterial);
-    scene.add(sphere);
-    sphere.position.z = -2;
+    // const sphereGeometry = new THREE.SphereBufferGeometry(1, 36, 36);
+    // const sphere = new THREE.Mesh(sphereGeometry, glassMaterial);
+    // scene.add(sphere);
+    // sphere.position.z = -2;
 
     const animate = () => {
       requestAnimationFrame(animate);
 
-      sphere.rotation.x += 0.02;
-      sphere.rotation.y += 0.02;
+      cube.rotation.x += 0.02;
+      cube.rotation.y += 0.02;
 
       renderer.render(scene, camera);
       gl.endFrameEXP();
