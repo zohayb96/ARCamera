@@ -64,7 +64,7 @@ export default class App extends React.Component {
       }),
       transparent: true,
     });
-    const mesh = new THREE.Mesh(geometry, glassMaterial);
+    const mesh = new THREE.Mesh(geometry, customMaterial);
     const newItem = dropItem(mesh, this.camera.position);
     this.scene.add(newItem);
   }
@@ -250,7 +250,7 @@ function dropItem(model, dropPos) {
   const item = model.clone();
   item.position.x = dropPos.x;
   item.position.y = dropPos.y;
-  item.position.z = dropPos.z;
+  item.position.z = dropPos.z - 0.5;
   item.speed = 0.05;
   return item;
 }
