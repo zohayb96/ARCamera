@@ -22,6 +22,8 @@ export default class App extends React.Component {
       pan: new Animated.ValueXY(),
     };
     this.model = null;
+    this.addCube = this.addCube.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
   }
 
   componentWillMount() {
@@ -44,21 +46,31 @@ export default class App extends React.Component {
     });
   }
 
-  render() {
-    function addCube() {
-      var geometry = new THREE.CubeGeometry(200, 200, 200);
-      var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-      var mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-    }
+  handleDrop = () => {
+    console.log('PRessed');
+    const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const thingToDrop = new THREE.Mesh(geometry, customMaterial);
+    const newItem = dropItem(thingToDrop, this.camera.position);
+    this.scene.add(newItem);
+  };
 
+  async addCube() {
+    console.log('PRessed');
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+    const customMaterial = new THREE.MeshBasicMaterial({
+      map: await ExpoTHREE.createTextureAsync({
+        asset: Expo.Asset.fromModule(require('./custom.jpg')),
+      }),
+      transparent: true,
+    });
+    const mesh = new THREE.Mesh(geometry, customMaterial);
+    this.scene.add(mesh);
+  }
+
+  render() {
     const panStyle = {
       transform: this.state.pan.getTranslateTransform(),
-    };
-    handleDrop = () => {
-      const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-      const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-      this.scene.add(new THREE.Mesh(geometry, customMaterial));
     };
     return (
       <View style={{ flex: 1 }}>
@@ -85,6 +97,7 @@ export default class App extends React.Component {
             raised
             rounded
             title="Draw"
+            onPress={this.addCube}
             buttonStyle={{
               backgroundColor: 'red',
               opacity: 0.6,
@@ -104,8 +117,8 @@ export default class App extends React.Component {
 
     const arSession = await this._glView.startARSessionAsync();
 
-    var scene = new THREE.Scene();
-    const camera = ExpoTHREE.createARCamera(
+    this.scene = new THREE.Scene();
+    this.camera = ExpoTHREE.createARCamera(
       arSession,
       width,
       height,
@@ -122,13 +135,13 @@ export default class App extends React.Component {
     leftLight.position.set(-3, 5, 0).normalize();
     rightLight.position.set(3, 5, 0).normalize();
     bottomLight.position.set(0, -5, 0).normalize();
-    scene.add(leftLight);
-    scene.add(rightLight);
-    scene.add(bottomLight);
+    this.scene.add(leftLight);
+    this.scene.add(rightLight);
+    this.scene.add(bottomLight);
 
     // Ambient Lighting
     var ambient = new THREE.AmbientLight(0x00ffff);
-    scene.add(ambient);
+    this.scene.add(ambient);
 
     const customMaterial = new THREE.MeshBasicMaterial({
       map: await ExpoTHREE.createTextureAsync({
@@ -145,19 +158,26 @@ export default class App extends React.Component {
       opacity: 0.75,
     });
 
-    scene.background = ExpoTHREE.createARBackgroundTexture(arSession, renderer);
+    this.scene.background = ExpoTHREE.createARBackgroundTexture(
+      arSession,
+      renderer
+    );
     var SphereGeometry = new THREE.SphereGeometry(0.8, 0.07, 0.07);
 
     // Edit the box dimensions here and see changes immediately!
     var geometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
     var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     var cube = new THREE.Mesh(geometry, customMaterial);
+    var cube1 = new THREE.Mesh(geometry, customMaterial);
     cube.position.z = -0.8;
+    cube1.position.z = -1.0;
     this.model = cube;
-    scene.add(cube);
+    // scene.add(cube);
+    // scene.add(cube1);
     var sphere = new THREE.Mesh(geometry, glassMaterial);
     sphere.position.z = 0.8;
-    scene.add(sphere);
+    // scene.add(sphere);
+    this.camera.position.z = 5;
 
     // lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
     // var lineGeometry = new THREE.Geometry();
@@ -174,11 +194,14 @@ export default class App extends React.Component {
 
     const animate = () => {
       requestAnimationFrame(animate);
+      this.camera.position.setFromMatrixPosition(this.camera.matrixWorld);
+      const cameraPos = new THREE.Vector3(0, 0, 0);
+      cameraPos.applyMatrix4(this.camera.matrixWorld);
 
-      cube.rotation.x += 0.02;
-      cube.rotation.y += 0.02;
+      // cube.rotation.x += 0.02;
+      // cube.rotation.y += 0.02;
 
-      renderer.render(scene, camera);
+      renderer.render(this.scene, this.camera);
       gl.endFrameEXP();
     };
     animate();
@@ -221,3 +244,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+function dropItem(model, dropPos) {
+  const item = model.clone();
+  item.position.x = dropPos.x;
+  item.position.y = dropPos.y;
+  item.position.z = dropPos.z;
+  item.speed = 0.05;
+  return item;
+}
