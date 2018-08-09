@@ -12,6 +12,7 @@ import Expo from 'expo';
 import * as THREE from 'three';
 import ExpoTHREE from 'expo-three';
 import { Button } from 'react-native-elements';
+import { ColorWheel } from 'react-native-color-wheel';
 console.disableYellowBox = true;
 
 export default class App extends React.Component {
@@ -66,16 +67,29 @@ export default class App extends React.Component {
           style={{ flex: 1 }}
           onContextCreate={this._onGLContextCreate}
         />
+        <View style={styles.colorPicker}>
+          <ColorWheel
+            initialColor="#00ee00"
+            onColorChange={color => console.log({ color })}
+            style={{
+              height: 100,
+              width: 100,
+              position: 'absolute',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          />
+        </View>
         <View style={styles.drop}>
           <Button
             raised
             rounded
             title="Draw"
-            onPress={this.addCube}
             buttonStyle={{
-              backgroundColor: 'blue',
-              width: 100,
-              height: 100,
+              backgroundColor: 'red',
+              opacity: 0.6,
+              width: 85,
+              height: 85,
             }}
           />
           <Image style={styles.can} source={require('./sprayCan.png')} />
@@ -131,16 +145,19 @@ export default class App extends React.Component {
       opacity: 0.75,
     });
 
-    // scene.background = ExpoTHREE.createARBackgroundTexture(arSession, renderer);
+    scene.background = ExpoTHREE.createARBackgroundTexture(arSession, renderer);
     var SphereGeometry = new THREE.SphereGeometry(0.8, 0.07, 0.07);
 
     // Edit the box dimensions here and see changes immediately!
-    const geometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, customMaterial);
+    var geometry = new THREE.BoxGeometry(0.25, 0.25, 0.25);
+    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    var cube = new THREE.Mesh(geometry, customMaterial);
     cube.position.z = -0.8;
     this.model = cube;
     scene.add(cube);
+    var sphere = new THREE.Mesh(geometry, glassMaterial);
+    sphere.position.z = 0.8;
+    scene.add(sphere);
 
     // lineMaterial = new THREE.LineBasicMaterial({ color: 0x0000ff });
     // var lineGeometry = new THREE.Geometry();
@@ -172,9 +189,18 @@ const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   drop: {
+    justifyContent: 'center',
+    alignItems: 'center',
     position: 'absolute',
     top: height - 250,
-    left: width / 2 - 60,
+    left: width / 2 - 200,
+  },
+  colorPicker: {
+    position: 'absolute',
+    top: height - 620,
+    left: width / 2 - 100,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   badge: {
     position: 'absolute',
