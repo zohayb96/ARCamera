@@ -25,25 +25,25 @@ export default class App extends React.Component {
     this.addCube = this.addCube.bind(this);
   }
 
-  componentWillMount() {
-    this._val = { x: 0, y: 0 };
-    this.state.pan.addListener(value => (this._val = value));
+  // componentWillMount() {
+  //   this._val = { x: 0, y: 0 };
+  //   this.state.pan.addListener(value => (this._val = value));
 
-    this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (e, gesture) => true,
-      onPanResponderGrant: (e, gesture) => {
-        this.state.pan.setOffset({
-          x: this._val.x,
-          y: this._val.y,
-        });
-        this.state.pan.setValue({ x: 0, y: 0 });
-      },
-      onPanResponderMove: Animated.event([
-        null,
-        { dx: this.state.pan.x, dy: this.state.pan.y },
-      ]),
-    });
-  }
+  //   this.panResponder = PanResponder.create({
+  //     onStartShouldSetPanResponder: (e, gesture) => true,
+  //     onPanResponderGrant: (e, gesture) => {
+  //       this.state.pan.setOffset({
+  //         x: this._val.x,
+  //         y: this._val.y,
+  //       });
+  //       this.state.pan.setValue({ x: 0, y: 0 });
+  //     },
+  //     onPanResponderMove: Animated.event([
+  //       null,
+  //       { dx: this.state.pan.x, dy: this.state.pan.y },
+  //     ]),
+  //   });
+  // }
 
   // handleDrop = () => {
   //   console.log('PRessed');
@@ -56,23 +56,24 @@ export default class App extends React.Component {
 
   async addCube() {
     const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const sphere = new THREE.SphereGeometry(0.8, 0.07, 0.07);
+    var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const sphere = new THREE.SphereGeometry(0.01, 0.07, 0.07);
     const customMaterial = new THREE.MeshBasicMaterial({
       map: await ExpoTHREE.createTextureAsync({
         asset: Expo.Asset.fromModule(require('./Glass.jpg')),
       }),
       transparent: true,
+      opacity: 0.6,
     });
     const mesh = new THREE.Mesh(geometry, customMaterial);
-    const newItem = dropItem(mesh, this.camera.position);
+    const newItem = setModelPos(mesh, this.camera.position);
     this.scene.add(newItem);
   }
 
   render() {
-    const panStyle = {
-      transform: this.state.pan.getTranslateTransform(),
-    };
+    // const panStyle = {
+    //   transform: this.state.pan.getTranslateTransform(),
+    // };
     return (
       <View style={{ flex: 1 }}>
         <Expo.GLView
@@ -101,7 +102,7 @@ export default class App extends React.Component {
             onPress={this.addCube}
             buttonStyle={{
               backgroundColor: 'red',
-              opacity: 0.6,
+              opacity: 0.2,
               width: 85,
               height: 85,
             }}
@@ -199,8 +200,8 @@ export default class App extends React.Component {
       const cameraPos = new THREE.Vector3(0, 0, 0);
       cameraPos.applyMatrix4(this.camera.matrixWorld);
 
-      // cube.rotation.x += 0.02;
-      // cube.rotation.y += 0.02;
+      // mesh.rotation.x += 0.02;
+      // mesh.rotation.y += 0.02;
 
       renderer.render(this.scene, this.camera);
       gl.endFrameEXP();
@@ -246,11 +247,11 @@ const styles = StyleSheet.create({
   },
 });
 
-function dropItem(model, dropPos) {
+function setModelPos(model, dropPos) {
   const item = model.clone();
   item.position.x = dropPos.x;
   item.position.y = dropPos.y;
-  item.position.z = dropPos.z - 0.5;
+  item.position.z = dropPos.z;
   item.speed = 0.05;
   return item;
 }
