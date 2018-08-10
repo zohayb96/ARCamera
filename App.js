@@ -64,7 +64,6 @@ export default class App extends React.Component {
   // };
 
   findColor() {
-    var hue = hsl(133, 40, 60);
     const colorHex = hsl(
       Math.round(this.state.color.h),
       Math.round(this.state.color.s),
@@ -78,12 +77,12 @@ export default class App extends React.Component {
   async addCube() {
     const colorToUse = this.findColor();
     console.log(colorToUse);
-    const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     var material = new THREE.MeshBasicMaterial({ color: colorToUse });
     const mesh = new THREE.Mesh(geometry, material);
     // console.log(this.state);
     const newItem = setModelPos(mesh, this.camera.position);
-    // this.graffitiObjects.push(newItem);
+    this.graffitiObjects.push(newItem);
     this.scene.add(newItem);
 
     // TRIANGLES
