@@ -33,7 +33,7 @@ export default class CameraView extends React.Component {
 
   async handleLoad() {
     let loader = new THREE.ObjectLoader();
-    const response = await axios.get(`http://172.16.21.129:8080/api/art/7`);
+    const response = await axios.get(`http://172.16.21.129:8080/api/art/8`);
     this.setState({
       singleArt: response.data,
     });

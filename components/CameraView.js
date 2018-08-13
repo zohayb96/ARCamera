@@ -19,6 +19,7 @@ import { ColorWheel } from 'react-native-color-wheel';
 var convert = require('color-convert');
 var hsl = require('hsl-to-hex');
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Menu, { MenuItem, MenuDivider } from 'react-native-material-menu';
 
 console.disableYellowBox = true;
 
@@ -40,6 +41,18 @@ export default class LoadArtView extends React.Component {
     this.handleSubmit = this.handleSubmit.bind(this);
     this.findColor = this.findColor.bind(this);
   }
+
+  // Menu
+  _menu = {};
+  setMenuRef = (ref, type) => {
+    this._menu[type] = ref;
+  };
+  hideMenu = type => {
+    this._menu[type].hide();
+  };
+  showMenu = type => {
+    this._menu[type].show();
+  };
 
   // componentWillMount() {
   //   this._val = { x: 0, y: 0 };
@@ -223,7 +236,29 @@ export default class LoadArtView extends React.Component {
           />
         </View>
         <View style={styles.drop}>
-          <Button
+          {/* Pick shape from list menu */}
+          <Menu
+            ref={ref => this.setMenuRef(ref, 'shape')}
+            button={
+              <Button
+                raised
+                rounded
+                title="Shape"
+                onPress={() => this.showMenu('shape')}
+                buttonStyle={{
+                  backgroundColor: 'red',
+                  opacity: 0.5,
+                  width: 'auto',
+                  height: 50,
+                }}
+              />
+            }
+          >
+            <MenuItem onPress={() => this.hideMenu('shape')}>Cube</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('shape')}>Sphere</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('shape')}>Pyramid</MenuItem>
+          </Menu>
+          {/* <Button
             raised
             rounded
             title="Cube"
@@ -246,8 +281,8 @@ export default class LoadArtView extends React.Component {
               width: 85,
               height: 85,
             }}
-          />
-          <Button
+          /> */}
+          {/* <Button
             raised
             rounded
             onPress={this.addTriangle}
@@ -269,6 +304,86 @@ export default class LoadArtView extends React.Component {
               opacity: 0.2,
               width: 85,
               height: 85,
+            }} */}
+          {/* /> */}
+        </View>
+        <View style={styles.size}>
+          <Menu
+            ref={ref => this.setMenuRef(ref, 'size')}
+            button={
+              <Button
+                raised
+                rounded
+                title="size"
+                onPress={() => this.showMenu('size')}
+                buttonStyle={{
+                  backgroundColor: 'purple',
+                  opacity: 0.5,
+                  width: 'auto',
+                  height: 50,
+                }}
+              />
+            }
+          >
+            <MenuItem onPress={() => this.hideMenu('size')}>Small</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('size')}>Medium</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('size')}>Large</MenuItem>
+          </Menu>
+          <Menu
+            ref={ref => this.setMenuRef(ref, 'texture')}
+            button={
+              <Button
+                raised
+                rounded
+                title="Texture"
+                onPress={() => this.showMenu('texture')}
+                buttonStyle={{
+                  backgroundColor: 'green',
+                  opacity: 0.5,
+                  width: 'auto',
+                  height: 50,
+                }}
+              />
+            }
+          >
+            <MenuItem onPress={() => this.hideMenu('texture')}>Glass</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('texture')}>Fire</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('texture')}>Wood</MenuItem>
+            <MenuItem onPress={() => this.hideMenu('texture')}>Water</MenuItem>
+          </Menu>
+          <Button
+            raised
+            rounded
+            title=" Photo"
+            buttonStyle={{
+              backgroundColor: 'blue',
+              opacity: 0.5,
+              width: 'auto',
+              height: 50,
+            }}
+          />
+          <Button
+            raised
+            rounded
+            onPress={this.addTriangle}
+            title="Tri"
+            buttonStyle={{
+              backgroundColor: 'orange',
+              opacity: 0.5,
+              width: 85,
+              height: 50,
+            }}
+          />
+          <Button
+            raised
+            rounded
+            title="Save"
+            onPress={this.handleSubmit}
+            buttonStyle={{
+              backgroundColor: 'red',
+              opacity: 0.5,
+              width: 85,
+              height: 50,
             }}
           />
         </View>
@@ -329,11 +444,24 @@ export default class LoadArtView extends React.Component {
     var sphere = new THREE.Mesh(geometry, glassMaterial);
     sphere.position.z = 0.8;
 
-    var light = new THREE.AmbientLight(0x404040); // soft white light
-    this.scene.add(light);
-
     // this.arPointLight = new ThreeAR.Light();
     // this.arPointLight.position.y = 2;
+    // Lights
+
+    // var ambientLight = new THREE.AmbientLight(0x606060);
+    // this.scene.add(ambientLight);
+    // var directionalLight = new THREE.DirectionalLight(0xffffff);
+    // directionalLight.position.x = Math.random() - 0.5;
+    // directionalLight.position.y = Math.random() - 0.5;
+    // directionalLight.position.z = Math.random() - 0.5;
+    // directionalLight.position.normalize();
+    // this.scene.add(directionalLight);
+    // var directionalLight = new THREE.DirectionalLight(0x808080);
+    // directionalLight.position.x = Math.random() - 0.5;
+    // directionalLight.position.y = Math.random() - 0.5;
+    // directionalLight.position.z = Math.random() - 0.5;
+    // directionalLight.position.normalize();
+    // this.scene.add(directionalLight);
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -364,7 +492,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: height - 350,
+    top: height - 600,
+    left: width / 2 + 100,
+  },
+  size: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'absolute',
+    top: height - 550,
     left: width / 2 + 100,
   },
   dropView: {
