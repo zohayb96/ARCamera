@@ -181,8 +181,21 @@ export default class App extends React.Component {
             raised
             rounded
             onPress={this.addTriangle}
+            title="Triangle"
             buttonStyle={{
               backgroundColor: 'blue',
+              opacity: 0.2,
+              width: 85,
+              height: 85,
+            }}
+          />
+          <Button
+            raised
+            rounded
+            title="Save"
+            onPress={this.addTriangle}
+            buttonStyle={{
+              backgroundColor: 'purple',
               opacity: 0.2,
               width: 85,
               height: 85,
