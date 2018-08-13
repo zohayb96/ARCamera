@@ -7,6 +7,8 @@ const morgan = require('morgan');
 // Static middleware
 router.use(express.static(path.join(__dirname, '..', 'public')));
 
+router.use('/art', require('./art'));
+
 // // For all GET requests that aren't to an API route,
 // // we will send the index.html!
 // router.get('/*', (req, res, next) => {
