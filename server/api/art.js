@@ -3,6 +3,20 @@ var Sequelize = require('sequelize');
 const router = require('express').Router();
 const { Art } = require('../../database/');
 
+router.post('/add', async (req, res, next) => {
+  try {
+    const CreatedArt = await Art.create(req.body);
+    if (CreatedArt) {
+      res.status(201).json(CreatedArt);
+    } else {
+      res.sendStatus(404);
+    }
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(404);
+  }
+});
+
 router.get('/', async (req, res, next) => {
   try {
     console.log('REACHED');
@@ -10,20 +24,6 @@ router.get('/', async (req, res, next) => {
     res.json(allArt);
   } catch (err) {
     next(err);
-  }
-});
-
-router.post('/add', async (req, res, next) => {
-  try {
-    const CreatedArt = Art.creare(req.body);
-    if (CreatedArt) {
-      res.status(201).json(CreatedArt);
-    } else {
-      res.sendStatus(500);
-    }
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(500);
   }
 });
 

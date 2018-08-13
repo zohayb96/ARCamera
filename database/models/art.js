@@ -7,7 +7,7 @@ const Art = db.define('art', {
     allowNull: false,
   },
   location: {
-    type: Sequelize.ARRAY(Sequelize.FLOAT),
+    type: Sequelize.ARRAY(Sequelize.DECIMAL),
     allowNull: false,
   },
   description: {

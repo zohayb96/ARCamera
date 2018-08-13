@@ -7,7 +7,9 @@ import {
   Image,
   PanResponder,
   Animated,
+  Alert,
 } from 'react-native';
+import axios from 'axios';
 import Expo from 'expo';
 import { AR } from 'expo';
 import * as THREE from 'three';
@@ -29,12 +31,15 @@ export default class App extends React.Component {
       pan: new Animated.ValueXY(),
       color: null,
       hexColor: '',
+      latitude: null,
+      longitude: null,
     };
     this.model = null;
     this.graffitiObjects = [];
     this.addCube = this.addCube.bind(this);
     this.addSphere = this.addSphere.bind(this);
     this.addTriangle = this.addTriangle.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
     this.findColor = this.findColor.bind(this);
   }
 
@@ -67,6 +72,11 @@ export default class App extends React.Component {
   //   this.scene.add(newItem);
   // };
 
+  async componentWillMount() {
+    Permissions.askAsync(Permissions.CAMERA_ROLL);
+    Permissions.askAsync(Permissions.CAMERA);
+  }
+
   findColor() {
     const colorHex = hsl(
       Math.round(this.state.color.h),
@@ -84,14 +94,14 @@ export default class App extends React.Component {
         asset: Expo.Asset.fromModule(require('./Glass.jpg')),
       }),
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.85,
     });
     const colorToUse = this.findColor();
     const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     var material = new THREE.MeshBasicMaterial({
       color: colorToUse,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.85,
     });
     const mesh = new THREE.Mesh(geometry, material);
     const newItem = setModelPos(mesh, this.camera.position);
@@ -104,7 +114,7 @@ export default class App extends React.Component {
     const colorToUse = this.findColor();
     var material = new THREE.MeshBasicMaterial({
       color: colorToUse,
-      opacity: 0.75,
+      opacity: 0.85,
       transparent: true,
     });
     const mesh = new THREE.Mesh(
@@ -131,6 +141,67 @@ export default class App extends React.Component {
     this.graffitiObjects.push(newItem);
     this.scene.add(newItem);
   }
+
+  async handleSubmit(evt) {
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        this.setState({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          error: null,
+        });
+      },
+      error => this.setState({ error: error.message }),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+    if (this.state.latitude === null || this.state.longitude === null) {
+      this.showFailAlert();
+    } else {
+      const locationToSave = [this.state.latitude, this.state.longitude];
+      console.log('Location', locationToSave);
+      try {
+        let count = 0;
+        const newArt = await axios.post(
+          'http://172.16.21.129:8080/api/art/add',
+          {
+            location: locationToSave,
+            artPiece: this.scene.toJSON(),
+            description: 'Amazing art piece, love it',
+            likes: 10,
+          }
+        );
+        console.log('SUCCESS');
+        this.showAlert();
+      } catch (err) {
+        console.log(err);
+        this.showFailAlert();
+      }
+    }
+  }
+
+  showAlert = () => {
+    Alert.alert(
+      'Posted!',
+      'Awesome!',
+      [{ text: ':)', onPress: () => console.log('Posted') }],
+      { cancelable: false }
+    );
+  };
+
+  // Message to user when post fails
+  showFailAlert = () => {
+    Alert.alert(
+      'Failed To Add!',
+      'Error!',
+      [
+        {
+          text: 'Please Try Again',
+          onPress: () => console.log('Error'),
+        },
+      ],
+      { cancelable: false }
+    );
+  };
 
   render() {
     return (
@@ -193,7 +264,7 @@ export default class App extends React.Component {
             raised
             rounded
             title="Save"
-            onPress={this.addTriangle}
+            onPress={this.handleSubmit}
             buttonStyle={{
               backgroundColor: 'purple',
               opacity: 0.2,
@@ -294,7 +365,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    top: height - 260,
+    top: height - 350,
     left: width / 2 + 100,
   },
   dropView: {
