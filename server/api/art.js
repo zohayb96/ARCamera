@@ -17,6 +17,15 @@ router.post('/add', async (req, res, next) => {
   }
 });
 
+router.get('/:id', async (req, res, next) => {
+  try {
+    const singleArt = await Art.findById(req.params.id);
+    res.json(singleArt);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/', async (req, res, next) => {
   try {
     console.log('REACHED');

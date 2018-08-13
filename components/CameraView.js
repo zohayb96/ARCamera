@@ -22,7 +22,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 console.disableYellowBox = true;
 
-export default class CameraView extends React.Component {
+export default class LoadArtView extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -70,10 +70,10 @@ export default class CameraView extends React.Component {
   //   this.scene.add(newItem);
   // };
 
-  async componentWillMount() {
-    Permissions.askAsync(Permissions.CAMERA_ROLL);
-    Permissions.askAsync(Permissions.CAMERA);
-  }
+  // async componentWillMount() {
+  //   Permissions.askAsync(Permissions.CAMERA_ROLL);
+  //   Permissions.askAsync(Permissions.CAMERA);
+  // }
 
   findColor() {
     const colorHex = hsl(
