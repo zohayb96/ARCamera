@@ -22,185 +22,28 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 console.disableYellowBox = true;
 
-export default class LoadArtView extends React.Component {
+export default class CameraView extends React.Component {
   constructor() {
     super();
     this.state = {
-      pan: new Animated.ValueXY(),
-      color: null,
-      hexColor: '',
-      latitude: null,
-      longitude: null,
+      singleArt: {},
     };
-    this.model = null;
-    this.graffitiObjects = [];
-    this.addCube = this.addCube.bind(this);
-    this.addSphere = this.addSphere.bind(this);
-    this.addTriangle = this.addTriangle.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.findColor = this.findColor.bind(this);
+    this.handleLoad = this.handleLoad.bind(this);
   }
 
-  // componentWillMount() {
-  //   this._val = { x: 0, y: 0 };
-  //   this.state.pan.addListener(value => (this._val = value));
-
-  //   this.panResponder = PanResponder.create({
-  //     onStartShouldSetPanResponder: (e, gesture) => true,
-  //     onPanResponderGrant: (e, gesture) => {
-  //       this.state.pan.setOffset({
-  //         x: this._val.x,
-  //         y: this._val.y,
-  //       });
-  //       this.state.pan.setValue({ x: 0, y: 0 });
-  //     },
-  //     onPanResponderMove: Animated.event([
-  //       null,
-  //       { dx: this.state.pan.x, dy: this.state.pan.y },
-  //     ]),
-  //   });
-  // }
-
-  // handleDrop = () => {
-  //   console.log('PRessed');
-  //   const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-  //   const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-  //   const thingToDrop = new THREE.Mesh(geometry, customMaterial);
-  //   const newItem = dropItem(thingToDrop, this.camera.position);
-  //   this.scene.add(newItem);
-  // };
-
-  async componentWillMount() {
-    Permissions.askAsync(Permissions.CAMERA_ROLL);
-    Permissions.askAsync(Permissions.CAMERA);
-  }
-
-  findColor() {
-    const colorHex = hsl(
-      Math.round(this.state.color.h),
-      Math.round(this.state.color.s),
-      Math.round(this.state.color.v / 2)
-    );
-    console.log(colorHex);
-    this.setState({ colorHex: colorHex });
-    return colorHex;
-  }
-
-  async addCube() {
-    const glassMaterial = new THREE.MeshBasicMaterial({
-      map: await ExpoTHREE.createTextureAsync({
-        asset: Expo.Asset.fromModule(require('../Glass.jpg')),
-      }),
-      transparent: true,
-      opacity: 0.85,
+  async handleLoad() {
+    let loader = new THREE.ObjectLoader();
+    const response = await axios.get(`http://172.16.21.129:8080/api/art/7`);
+    this.setState({
+      singleArt: response.data,
     });
-    const colorToUse = this.findColor();
-    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      transparent: true,
-      opacity: 0.85,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    const newItem = setModelPos(mesh, this.camera.position);
-    newItem.castShadow = true;
-    this.graffitiObjects.push(newItem);
-    this.scene.add(newItem);
-  }
-
-  async addTriangle() {
-    const colorToUse = this.findColor();
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      opacity: 0.85,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(
-      new THREE.TetrahedronBufferGeometry(0.1, 0),
-      material
-    );
-    const newItem = setModelPos(mesh, this.camera.position);
-    this.graffitiObjects.push(newItem);
-    this.scene.add(newItem);
-  }
-
-  async addSphere() {
-    const colorToUse = this.findColor();
-    console.log(colorToUse);
-    console.log(this.graffitiObjects);
-    const sphereGeometry = new THREE.SphereGeometry(0.1, 0.1, 0.1);
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      opacity: 0.75,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(sphereGeometry, material);
+    const sceneJson = response.data.artPiece;
+    const artToLoad = loader.parse(sceneJson);
+    console.log('artToLoad: ', artToLoad);
+    this.scene.add(artToLoad);
+    console.log('Loading');
     // console.log(this.state);
-    const newItem = setModelPos(mesh, this.camera.position);
-    this.graffitiObjects.push(newItem);
-    this.scene.add(newItem);
   }
-
-  async handleSubmit(evt) {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        this.setState({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          error: null,
-        });
-      },
-      error => this.setState({ error: error.message }),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-    if (this.state.latitude === null || this.state.longitude === null) {
-      this.showFailAlert();
-    } else {
-      const locationToSave = [this.state.latitude, this.state.longitude];
-      console.log('Location', locationToSave);
-      try {
-        let count = 0;
-        const newArt = await axios.post(
-          'http://172.16.21.129:8080/api/art/add',
-          {
-            location: locationToSave,
-            artPiece: this.scene.toJSON(),
-            description: 'Amazing art piece, love it',
-            likes: 10,
-          }
-        );
-        console.log('SUCCESS');
-        this.showAlert();
-      } catch (err) {
-        console.log(err);
-        this.showFailAlert();
-      }
-    }
-  }
-
-  showAlert = () => {
-    Alert.alert(
-      'Posted!',
-      'Awesome!',
-      [{ text: ':)', onPress: () => console.log('Posted') }],
-      { cancelable: false }
-    );
-  };
-
-  // Message to user when post fails
-  showFailAlert = () => {
-    Alert.alert(
-      'Failed To Add!',
-      'Error!',
-      [
-        {
-          text: 'Please Try Again',
-          onPress: () => console.log('Error'),
-        },
-      ],
-      { cancelable: false }
-    );
-  };
 
   render() {
     return (
@@ -210,60 +53,12 @@ export default class LoadArtView extends React.Component {
           style={{ flex: 1 }}
           onContextCreate={this._onGLContextCreate}
         />
-        <View style={styles.colorPicker}>
-          <ColorWheel
-            onColorChange={color => this.setState({ color })}
-            style={{
-              height: 100,
-              width: 100,
-              position: 'absolute',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          />
-        </View>
         <View style={styles.drop}>
           <Button
             raised
             rounded
-            title="Cube"
-            onPress={this.addCube}
-            buttonStyle={{
-              backgroundColor: 'red',
-              opacity: 0.2,
-              width: 85,
-              height: 85,
-            }}
-          />
-          <Button
-            raised
-            rounded
-            title="Sphere"
-            onPress={this.addSphere}
-            buttonStyle={{
-              backgroundColor: 'green',
-              opacity: 0.2,
-              width: 85,
-              height: 85,
-            }}
-          />
-          <Button
-            raised
-            rounded
-            onPress={this.addTriangle}
-            title="Triangle"
-            buttonStyle={{
-              backgroundColor: 'blue',
-              opacity: 0.2,
-              width: 85,
-              height: 85,
-            }}
-          />
-          <Button
-            raised
-            rounded
-            title="Save"
-            onPress={this.handleSubmit}
+            title="Load Scene"
+            onPress={this.handleLoad}
             buttonStyle={{
               backgroundColor: 'purple',
               opacity: 0.2,
@@ -272,9 +67,6 @@ export default class LoadArtView extends React.Component {
             }}
           />
         </View>
-        {/* <View style={styles.dropView}>
-          <Image style={styles.can} source={require('./sprayCan.png')} />
-        </View> */}
       </View>
     );
   }
@@ -282,7 +74,6 @@ export default class LoadArtView extends React.Component {
   _onGLContextCreate = async gl => {
     const width = gl.drawingBufferWidth;
     const height = gl.drawingBufferHeight;
-    // AR.setPlaneDetection(AR.PlaneDetectionTypes.Horizontal);
 
     this.arSession = await this._glView.startARSessionAsync();
 
@@ -340,12 +131,6 @@ export default class LoadArtView extends React.Component {
       this.camera.position.setFromMatrixPosition(this.camera.matrixWorld);
       const cameraPos = new THREE.Vector3(0, 0, 0);
       cameraPos.applyMatrix4(this.camera.matrixWorld);
-
-      this.graffitiObjects.forEach(art => {
-        // Animates items for live movement
-        // art.rotation.x += art.rotator;
-        // art.rotation.y += art.rotator;
-      });
 
       // cube.rotation.x += 0.02;
       // cube.rotation.y += 0.02;
