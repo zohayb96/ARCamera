@@ -140,7 +140,7 @@ export default class LoadArtView extends React.Component {
 
   findShape(sizeToUse) {
     if (this.state.shape === 'sphere') {
-      return new THREE.SphereGeometry(sizeToUse, sizeToUse, sizeToUse);
+      return new THREE.SphereGeometry(sizeToUse, 64, 64);
     } else if (this.state.shape === 'pyramid') {
       return new THREE.TetrahedronBufferGeometry(sizeToUse, 0);
     } else {
@@ -171,7 +171,7 @@ export default class LoadArtView extends React.Component {
           asset: Expo.Asset.fromModule(require('../Glass.jpg')),
         }),
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.7,
       }));
     } else if (this.state.texture === 'fire') {
       return (material = new THREE.MeshBasicMaterial({
@@ -191,6 +191,14 @@ export default class LoadArtView extends React.Component {
       return (material = new THREE.MeshBasicMaterial({
         map: await ExpoTHREE.createTextureAsync({
           asset: Expo.Asset.fromModule(require('../Water.jpg')),
+        }),
+        transparent: true,
+        opacity: 0.7,
+      }));
+    } else if (this.state.texture === 'minecraft') {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../Minecraft.jpg')),
         }),
         transparent: true,
       }));
@@ -452,6 +460,9 @@ export default class LoadArtView extends React.Component {
             <MenuItem onPress={() => this.setState({ texture: 'wood' })}>
               Wood
             </MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'minecraft' })}>
+              Minecraft
+            </MenuItem>
             <MenuItem onPress={() => this.setState({ texture: 'water' })}>
               Water
             </MenuItem>
@@ -591,8 +602,8 @@ export default class LoadArtView extends React.Component {
 
       this.graffitiObjects.forEach(art => {
         // Animates items for live movement
-        // art.rotation.x += art.rotator;
-        // art.rotation.y += art.rotator;
+        art.rotation.x += art.rotator;
+        art.rotation.y += art.rotator;
       });
 
       // cube.rotation.x += 0.02;
