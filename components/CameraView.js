@@ -29,17 +29,22 @@ export default class LoadArtView extends React.Component {
     this.state = {
       pan: new Animated.ValueXY(),
       color: null,
-      hexColor: '',
+      hexColor: '#FFFFFF',
       latitude: null,
       longitude: null,
+      shape: 'cube',
+      size: 'medium',
     };
     this.model = null;
     this.graffitiObjects = [];
-    this.addCube = this.addCube.bind(this);
-    this.addSphere = this.addSphere.bind(this);
+    // this.addCube = this.addCube.bind(this);
+    // this.addSphere = this.addSphere.bind(this);
     this.addTriangle = this.addTriangle.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.findColor = this.findColor.bind(this);
+    this.findShape = this.findShape.bind(this);
+    this.findSize = this.findSize.bind(this);
+    this.addShapeWithSize = this.addShapeWithSize.bind(this);
   }
 
   // Menu
@@ -99,26 +104,46 @@ export default class LoadArtView extends React.Component {
     return colorHex;
   }
 
-  async addCube() {
-    const glassMaterial = new THREE.MeshBasicMaterial({
-      map: await ExpoTHREE.createTextureAsync({
-        asset: Expo.Asset.fromModule(require('../Glass.jpg')),
-      }),
-      transparent: true,
-      opacity: 0.85,
-    });
-    const colorToUse = this.findColor();
-    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      transparent: true,
-      opacity: 0.85,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    const newItem = setModelPos(mesh, this.camera.position);
-    newItem.castShadow = true;
-    this.graffitiObjects.push(newItem);
-    this.scene.add(newItem);
+  // async addCube() {
+  //   const glassMaterial = new THREE.MeshBasicMaterial({
+  //     map: await ExpoTHREE.createTextureAsync({
+  //       asset: Expo.Asset.fromModule(require('../Glass.jpg')),
+  //     }),
+  //     transparent: true,
+  //     opacity: 0.85,
+  //   });
+  //   const colorToUse = this.findColor();
+  //   const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
+  //   var material = new THREE.MeshBasicMaterial({
+  //     color: colorToUse,
+  //     transparent: true,
+  //     opacity: 0.85,
+  //   });
+  //   const mesh = new THREE.Mesh(geometry, material);
+  //   const newItem = setModelPos(mesh, this.camera.position);
+  //   newItem.castShadow = true;
+  //   this.graffitiObjects.push(newItem);
+  //   this.scene.add(newItem);
+  // }
+
+  findSize() {
+    if (this.state.size === 'medium') {
+      return 0.1;
+    } else if (this.state.size === 'large') {
+      return 0.15;
+    } else {
+      return 0.05;
+    }
+  }
+
+  findShape(sizeToUse) {
+    if (this.state.shape === 'sphere') {
+      return new THREE.SphereGeometry(sizeToUse, sizeToUse, sizeToUse);
+    } else if (this.state.shape === 'pyramid') {
+      return new THREE.TetrahedronBufferGeometry(sizeToUse, 0);
+    } else {
+      return new THREE.BoxGeometry(sizeToUse, sizeToUse, sizeToUse);
+    }
   }
 
   async addTriangle() {
@@ -137,18 +162,31 @@ export default class LoadArtView extends React.Component {
     this.scene.add(newItem);
   }
 
-  async addSphere() {
+  // async addSphere() {
+  //   const colorToUse = this.findColor();
+  //   console.log(colorToUse);
+  //   console.log(this.graffitiObjects);
+  //   const sphereGeometry = new THREE.SphereGeometry(0.1, 0.1, 0.1);
+  //   var material = new THREE.MeshBasicMaterial({
+  //     color: colorToUse,
+  //     opacity: 0.75,
+  //     transparent: true,
+  //   });
+  //   const mesh = new THREE.Mesh(sphereGeometry, material);
+  //   // console.log(this.state);
+  //   const newItem = setModelPos(mesh, this.camera.position);
+  //   this.graffitiObjects.push(newItem);
+  //   this.scene.add(newItem);
+  // }
+
+  // Add selected shape of selected size
+  async addShapeWithSize() {
+    // get all shapes and sizes to use
+    const sizeToUse = this.findSize();
     const colorToUse = this.findColor();
-    console.log(colorToUse);
-    console.log(this.graffitiObjects);
-    const sphereGeometry = new THREE.SphereGeometry(0.1, 0.1, 0.1);
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      opacity: 0.75,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(sphereGeometry, material);
-    // console.log(this.state);
+    const objectToRender = this.findShape(sizeToUse);
+    var material = new THREE.MeshBasicMaterial({ color: colorToUse });
+    const mesh = new THREE.Mesh(objectToRender, material);
     const newItem = setModelPos(mesh, this.camera.position);
     this.graffitiObjects.push(newItem);
     this.scene.add(newItem);
@@ -254,9 +292,15 @@ export default class LoadArtView extends React.Component {
               />
             }
           >
-            <MenuItem onPress={() => this.hideMenu('shape')}>Cube</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('shape')}>Sphere</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('shape')}>Pyramid</MenuItem>
+            <MenuItem onPress={() => this.setState({ shape: 'cube' })}>
+              Cube
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ shape: 'sphere' })}>
+              Sphere
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ shape: 'pyramid' })}>
+              Pyramid
+            </MenuItem>
           </Menu>
           {/* <Button
             raised
@@ -325,9 +369,15 @@ export default class LoadArtView extends React.Component {
               />
             }
           >
-            <MenuItem onPress={() => this.hideMenu('size')}>Small</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('size')}>Medium</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('size')}>Large</MenuItem>
+            <MenuItem onPress={() => this.setState({ size: 'small' })}>
+              Small
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ size: 'medium' })}>
+              Medium
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ size: 'large' })}>
+              Large
+            </MenuItem>
           </Menu>
           <Menu
             ref={ref => this.setMenuRef(ref, 'texture')}
@@ -380,7 +430,19 @@ export default class LoadArtView extends React.Component {
             title="Save"
             onPress={this.handleSubmit}
             buttonStyle={{
-              backgroundColor: 'red',
+              backgroundColor: 'black',
+              opacity: 0.5,
+              width: 85,
+              height: 50,
+            }}
+          />
+          <Button
+            raised
+            rounded
+            title="log"
+            onPress={this.addShapeWithSize}
+            buttonStyle={{
+              backgroundColor: 'yellow',
               opacity: 0.5,
               width: 85,
               height: 50,
