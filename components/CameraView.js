@@ -34,17 +34,19 @@ export default class LoadArtView extends React.Component {
       longitude: null,
       shape: 'cube',
       size: 'medium',
+      texture: 'color',
     };
     this.model = null;
     this.graffitiObjects = [];
     // this.addCube = this.addCube.bind(this);
     // this.addSphere = this.addSphere.bind(this);
-    this.addTriangle = this.addTriangle.bind(this);
+    // this.addTriangle = this.addTriangle.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.findColor = this.findColor.bind(this);
     this.findShape = this.findShape.bind(this);
     this.findSize = this.findSize.bind(this);
     this.addShapeWithSize = this.addShapeWithSize.bind(this);
+    this.findCustomMaterial = this.findCustomMaterial.bind(this);
   }
 
   // Menu
@@ -146,20 +148,60 @@ export default class LoadArtView extends React.Component {
     }
   }
 
-  async addTriangle() {
-    const colorToUse = this.findColor();
-    var material = new THREE.MeshBasicMaterial({
-      color: colorToUse,
-      opacity: 0.85,
-      transparent: true,
-    });
-    const mesh = new THREE.Mesh(
-      new THREE.TetrahedronBufferGeometry(0.1, 0),
-      material
-    );
-    const newItem = setModelPos(mesh, this.camera.position);
-    this.graffitiObjects.push(newItem);
-    this.scene.add(newItem);
+  // async addTriangle() {
+  //   const colorToUse = this.findColor();
+  //   var material = new THREE.MeshBasicMaterial({
+  //     color: colorToUse,
+  //     opacity: 0.85,
+  //     transparent: true,
+  //   });
+  //   const mesh = new THREE.Mesh(
+  //     new THREE.TetrahedronBufferGeometry(0.1, 0),
+  //     material
+  //   );
+  //   const newItem = setModelPos(mesh, this.camera.position);
+  //   this.graffitiObjects.push(newItem);
+  //   this.scene.add(newItem);
+  // }
+
+  async findCustomMaterial() {
+    if (this.state.texture === 'glass') {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../Glass.jpg')),
+        }),
+        transparent: true,
+        opacity: 0.8,
+      }));
+    } else if (this.state.texture === 'fire') {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../Fire.jpg')),
+        }),
+        transparent: true,
+      }));
+    } else if (this.state.texture === 'wood') {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../Wood.jpg')),
+        }),
+        transparent: true,
+      }));
+    } else if (this.state.texture === 'water') {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../Water.jpg')),
+        }),
+        transparent: true,
+      }));
+    } else {
+      return (material = new THREE.MeshBasicMaterial({
+        map: await ExpoTHREE.createTextureAsync({
+          asset: Expo.Asset.fromModule(require('../uv.jpg')),
+        }),
+        transparent: true,
+      }));
+    }
   }
 
   // async addSphere() {
@@ -183,9 +225,14 @@ export default class LoadArtView extends React.Component {
   async addShapeWithSize() {
     // get all shapes and sizes to use
     const sizeToUse = this.findSize();
-    const colorToUse = this.findColor();
     const objectToRender = this.findShape(sizeToUse);
-    var material = new THREE.MeshBasicMaterial({ color: colorToUse });
+    const colorToUse = this.findColor();
+    let material = '';
+    if (this.state.texture === 'color') {
+      material = new THREE.MeshBasicMaterial({ color: colorToUse });
+    } else {
+      material = await this.findCustomMaterial();
+    }
     const mesh = new THREE.Mesh(objectToRender, material);
     const newItem = setModelPos(mesh, this.camera.position);
     this.graffitiObjects.push(newItem);
@@ -396,10 +443,21 @@ export default class LoadArtView extends React.Component {
               />
             }
           >
-            <MenuItem onPress={() => this.hideMenu('texture')}>Glass</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('texture')}>Fire</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('texture')}>Wood</MenuItem>
-            <MenuItem onPress={() => this.hideMenu('texture')}>Water</MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'glass' })}>
+              Glass
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'fire' })}>
+              Fire
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'wood' })}>
+              Wood
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'water' })}>
+              Water
+            </MenuItem>
+            <MenuItem onPress={() => this.setState({ texture: 'color' })}>
+              Color
+            </MenuItem>
           </Menu>
           <Button
             raised
@@ -412,7 +470,7 @@ export default class LoadArtView extends React.Component {
               height: 50,
             }}
           />
-          <Button
+          {/* <Button
             raised
             rounded
             onPress={this.addTriangle}
@@ -423,7 +481,7 @@ export default class LoadArtView extends React.Component {
               width: 85,
               height: 50,
             }}
-          />
+          /> */}
           <Button
             raised
             rounded
@@ -502,7 +560,7 @@ export default class LoadArtView extends React.Component {
     var cube1 = new THREE.Mesh(geometry, customMaterial);
     cube.position.z = -0.8;
     cube1.position.z = -1.0;
-    this.model = await loadModel(this.state.color);
+    // this.model = await loadModel(this.state.color);
     var sphere = new THREE.Mesh(geometry, glassMaterial);
     sphere.position.z = 0.8;
 
@@ -598,20 +656,20 @@ const styles = StyleSheet.create({
   },
 });
 
-async function loadModel(hexcolor) {
-  const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
-  var material = new THREE.MeshBasicMaterial({ color: '#FFFFFFF' });
-  const sphere = new THREE.SphereGeometry(0.1, 0.07, 0.07);
-  const customMaterial = new THREE.MeshBasicMaterial({
-    map: await ExpoTHREE.createTextureAsync({
-      asset: Expo.Asset.fromModule(require('../uv.jpg')),
-    }),
-    transparent: true,
-    opacity: 0.75,
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  return mesh;
-}
+// async function loadModel(hexcolor) {
+//   const geometry = new THREE.BoxGeometry(0.07, 0.07, 0.07);
+//   var material = new THREE.MeshBasicMaterial({ color: '#FFFFFFF' });
+//   const sphere = new THREE.SphereGeometry(0.1, 0.07, 0.07);
+//   const customMaterial = new THREE.MeshBasicMaterial({
+//     map: await ExpoTHREE.createTextureAsync({
+//       asset: Expo.Asset.fromModule(require('../uv.jpg')),
+//     }),
+//     transparent: true,
+//     opacity: 0.75,
+//   });
+//   const mesh = new THREE.Mesh(geometry, material);
+//   return mesh;
+// }
 
 function setModelPos(model, dropPos) {
   const item = model.clone();
